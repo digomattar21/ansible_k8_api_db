@@ -1,0 +1,100 @@
+---
+- name: Automate Minikube Deployment
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+    project_dir: "{{ lookup('env', 'PWD') }}"
+
+  tasks:
+    - name: Start Minikube
+      command: minikube start
+
+    - name: Set kube context to minikube
+      command: kubectl config use-context minikube
+
+    - docker_login:
+        username: johngaltdebugger
+        password: FreeKevinMitnick@2021
+
+    - name: Build Docker image for web server
+      community.docker.docker_image:
+        source: build
+        build:
+          path: "{{ project_dir }}"
+          dockerfile: "{{ project_dir }}/Dockerfile-web-server"
+        name: johngaltdebugger/mywebapp
+        tag: latest
+
+    - name: Build Docker image for database
+      community.docker.docker_image:
+        source: build
+        build:
+          path: "{{ project_dir }}"
+          dockerfile: "{{ project_dir }}/Dockerfile-db"
+        name: johngaltdebugger/mydatabase
+        tag: latest
+
+    - name: Push Docker image for web server
+      community.docker.docker_image:
+        name: johngaltdebugger/mywebapp
+        tag: latest
+        push: yes
+        source: local
+
+    - name: Push Docker image for database
+      community.docker.docker_image:
+        name: johngaltdebugger/mydatabase
+        tag: latest
+        push: yes
+        source: local
+
+    - name: Deploy webapp
+      kubernetes.core.k8s:
+        kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+        state: present
+        src: "{{ project_dir }}/webapp-deployment.yaml"
+        namespace: default
+
+    - name: Deploy webapp service
+      kubernetes.core.k8s:
+        kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+        state: present
+        src: "{{ project_dir }}/webapp-service.yaml"
+        namespace: default
+
+    - name: Deploy database
+      kubernetes.core.k8s:
+        kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+        state: present
+        src: "{{ project_dir }}/db-deployment.yaml"
+        namespace: default
+
+    - name: Deploy database service
+      kubernetes.core.k8s:
+        kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+        state: present
+        src: "{{ project_dir }}/db-service.yaml"
+        namespace: default
+
+    # - name: Access webapp service
+    #   command: minikube service webapp-service --url
+    #   register: webapp_url
+    #   changed_when: False
+
+    - name: Wait for webapp service to be available
+      pause:
+        seconds: 30  # Adjust the time based on your environment's typical startup time
+
+    - name: Access webapp service
+      command: minikube service webapp-service --url
+      register: webapp_url
+      changed_when: False
+      failed_when: "'no running pod for service' in webapp_url.stderr"
+      retries: 3
+      delay: 10
+      until: webapp_url.rc == 0
+
+    - name: Display webapp URL
+      debug:
+        msg: "Webapp URL: {{ webapp_url.stdout }}"
