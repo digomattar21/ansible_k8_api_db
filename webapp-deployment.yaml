@@ -17,3 +17,6 @@ spec:
         image: johngaltdebugger/mywebapp:latest
         ports:
         - containerPort: 8001
+        env:
+          - name: DATABASE_HOST
+            value: "{{ db_host }}"
