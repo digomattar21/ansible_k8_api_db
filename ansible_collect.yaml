@@ -1,0 +1,45 @@
+---
+- name: Automate Minikube Deployment
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+    project_dir: "{{ lookup('env', 'PWD') }}"
+
+  tasks:
+    - name: Configure mount partitions
+      command: sleep 10s
+
+    - name: Copy files from vault
+      command: sleep 10s
+    # - name: Start Minikube
+    #   command: minikube start
+
+    # - name: Disable network interface wlan1
+    #   community.general.nmcli:
+    #     conn_name: wlan1 #identificar a interface de prod para dar down
+    #     state: down
+
+    # - name: Enable network interface wlan0
+    #   community.general.nmcli:
+    #     conn_name: wlan0 #subir a interface de conexao ao vault
+    #     state: up
+
+    # - name: Access webapp service
+    #   command: minikube service webapp-service --url
+    #   register: webapp_url
+    #   changed_when: False
+    #   failed_when: "'no running pod for service' in webapp_url.stderr"
+    #   retries: 3
+    #   delay: 10
+    #   until: webapp_url.rc == 0
+
+    # - name: Display webapp URL
+    #   debug:
+    #     msg: "Webapp URL: {{ webapp_url.stdout }}"
+
+# derrubar interface wlan1 ao conectar no cyber vault
+# derrubar wlan0 ao conectar em prod
+# subir pg dump no cyber vault
+# puxar pg dump do vault e dar restore
+      

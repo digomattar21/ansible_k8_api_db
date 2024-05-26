@@ -13,6 +13,20 @@
     - name: Set kube context to minikube
       command: kubectl config use-context minikube
 
+    - docker_login:
+        username: johngaltdebugger
+        password: FreeKevinMitnick@2021
+
+    # - name: Disable network interface wlan1
+    #   community.general.nmcli:
+    #     conn_name: wlan1 #identificar a interface de prod para dar down
+    #     state: down
+
+    # - name: Enable network interface wlan0
+    #   community.general.nmcli:
+    #     conn_name: wlan0 #subir a interface de conexao ao vault
+    #     state: up
+
     - name: Build Docker image for web server
       community.docker.docker_image:
         source: build
@@ -89,3 +103,9 @@
     - name: Display webapp URL
       debug:
         msg: "Webapp URL: {{ webapp_url.stdout }}"
+
+# derrubar interface wlan1 ao conectar no cyber vault
+# derrubar wlan0 ao conectar em prod
+# subir pg dump no cyber vault
+# puxar pg dump do vault e dar restore
+      
