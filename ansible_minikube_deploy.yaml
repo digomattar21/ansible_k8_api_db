@@ -8,7 +8,7 @@
 
   tasks:
     - name: Start Minikube
-      command: minikube start
+      command: minikube start --force
 
     - name: Set kube context to minikube
       command: kubectl config use-context minikube
