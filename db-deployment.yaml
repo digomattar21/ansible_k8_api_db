@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: database-deployment
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -12,8 +13,26 @@ spec:
       labels:
         app: database
     spec:
+      initContainers:
+      - name: db-restore
+        image: postgres:latest
+        command: ['sh', '-c', 'psql -h localhost -U user -d dbname -f /data/movies_dump.sql']
+        env:
+        - name: PGPASSWORD
+          value: "password"
+        volumeMounts:
+        - mountPath: /data
+          name: dump-volume
       containers:
       - name: database
         image: johngaltdebugger/mydatabase:latest
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - mountPath: /data
+          name: dump-volume
+      volumes:
+      - name: dump-volume
+        hostPath:
+          path: "/home/kevin/Desktop/Insper/8SEM/PFE/kube_ans_recovery/data"
+          type: Directory
