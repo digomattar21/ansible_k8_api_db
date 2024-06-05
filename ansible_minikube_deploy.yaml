@@ -15,7 +15,8 @@
     - name: Set kube context to minikube
       command: kubectl config use-context minikube
 
-    - docker_login:
+    - name: Docker login
+      community.docker.docker_login:
         username: johngaltdebugger
         password: FreeKevinMitnick@2021
 
@@ -70,46 +71,8 @@
         kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
         state: present
         src: "{{ project_dir }}/db-deployment.yaml.j2"
+        template: yes
         namespace: default
-        inline:
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: database-deployment
-            namespace: "{{ namespace }}"
-          spec:
-            replicas: 1
-            selector:
-              matchLabels:
-                app: database
-            template:
-              metadata:
-                labels:
-                  app: database
-              spec:
-                initContainers:
-                - name: db-restore
-                  image: postgres:latest
-                  command: ['sh', '-c', 'psql -h localhost -U user -d dbname -f /data/movies_dump.sql']
-                  env:
-                  - name: PGPASSWORD
-                    value: "password"
-                  volumeMounts:
-                  - mountPath: /data
-                    name: dump-volume
-                containers:
-                - name: database
-                  image: johngaltdebugger/mydatabase:latest
-                  ports:
-                  - containerPort: 5432
-                  volumeMounts:
-                  - mountPath: /data
-                    name: dump-volume
-                volumes:
-                - name: dump-volume
-                  hostPath:
-                    path: "{{ dump_file_path }}"
-                    type: Directory
 
     - name: Deploy database service
       kubernetes.core.k8s:
@@ -134,6 +97,7 @@
     - name: Display webapp URL
       debug:
         msg: "Webapp URL: {{ webapp_url.stdout }}"
+
 
 
     # - name: Check if db-restore pod exists

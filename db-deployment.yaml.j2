@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database-deployment
+  namespace: {{ namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      initContainers:
+      - name: db-restore
+        image: postgres:latest
+        command: ['sh', '-c', 'psql -h localhost -U user -d dbname -f /data/movies_dump.sql']
+        env:
+        - name: PGPASSWORD
+          value: "password"
+        volumeMounts:
+        - mountPath: /data
+          name: dump-volume
+      containers:
+      - name: database
+        image: johngaltdebugger/mydatabase:latest
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /data
+          name: dump-volume
+      volumes:
+      - name: dump-volume
+        hostPath:
+          path: "{{ dump_file_path }}"
+          type: Directory
