@@ -26,4 +26,9 @@ if __name__ == "__main__":
     playbook2 = "ansible_minikube_deploy.yaml"
     
     run_playbook(playbook1)
+    
+    #gather data from /data directory and grab the info 
+    #analyze runbook and docker apps to be deployed
+    
+    
     run_playbook(playbook2)

@@ -1,5 +1,5 @@
 ---
-- name: Automate Minikube Deployment
+- name: Gather data from vault
   hosts: localhost
   gather_facts: no
   vars:
@@ -8,38 +8,9 @@
 
   tasks:
     - name: Configure mount partitions
-      command: sleep 10s
+      command: mount -t cifs //172.30.253.14/backup_cleanroom /mnt -o cred=/etc/cifs_credentials,vers=2.0
 
     - name: Copy files from vault
-      command: sleep 10s
-    # - name: Start Minikube
-    #   command: minikube start
-
-    # - name: Disable network interface wlan1
-    #   community.general.nmcli:
-    #     conn_name: wlan1 #identificar a interface de prod para dar down
-    #     state: down
-
-    # - name: Enable network interface wlan0
-    #   community.general.nmcli:
-    #     conn_name: wlan0 #subir a interface de conexao ao vault
-    #     state: up
-
-    # - name: Access webapp service
-    #   command: minikube service webapp-service --url
-    #   register: webapp_url
-    #   changed_when: False
-    #   failed_when: "'no running pod for service' in webapp_url.stderr"
-    #   retries: 3
-    #   delay: 10
-    #   until: webapp_url.rc == 0
-
-    # - name: Display webapp URL
-    #   debug:
-    #     msg: "Webapp URL: {{ webapp_url.stdout }}"
-
-# derrubar interface wlan1 ao conectar no cyber vault
-# derrubar wlan0 ao conectar em prod
-# subir pg dump no cyber vault
-# puxar pg dump do vault e dar restore
+      command: cp -r /mnt /ansible_k8_api_db/data
+    
       
