@@ -34,5 +34,5 @@ spec:
       volumes:
       - name: dump-volume
         hostPath:
-          path: "/home/kevin/Desktop/Insper/8SEM/PFE/kube_ans_recovery/data"
+          path: "/root/ansible_k8_api_db/data"
           type: Directory
