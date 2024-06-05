@@ -5,6 +5,7 @@
   vars:
     ansible_python_interpreter: "/usr/bin/python3"
     project_dir: "{{ lookup('env', 'PWD') }}"
+    namespace: default
 
   tasks:
     - name: Start Minikube
@@ -95,102 +96,102 @@
         msg: "Webapp URL: {{ webapp_url.stdout }}"
 
 
-    # - name: Check if db-restore pod exists
-    #   shell: kubectl get pod db-restore -n "{{ namespace }}" --ignore-not-found
-    #   register: pod_check
-    #   changed_when: false
+    - name: Check if db-restore pod exists
+      shell: kubectl get pod db-restore -n "{{ namespace }}" --ignore-not-found
+      register: pod_check
+      changed_when: false
 
-    # - name: Delete existing db-restore pod if it exists
-    #   shell: kubectl delete pod db-restore -n "{{ namespace }}"
-    #   when: pod_check.stdout != ""
-    #   changed_when: false
+    - name: Delete existing db-restore pod if it exists
+      shell: kubectl delete pod db-restore -n "{{ namespace }}"
+      when: pod_check.stdout != ""
+      changed_when: false
 
-    # - name: Create a pod to run the database restore
-    #   kubernetes.core.k8s:
-    #     state: present
-    #     definition:
-    #       apiVersion: v1
-    #       kind: Pod
-    #       metadata:
-    #         name: db-restore
-    #         namespace: "{{ namespace }}"
-    #       spec:
-    #         initContainers:
-    #         - name: download-dump
-    #           image: busybox
-    #           command: ["sh", "-c", "mkdir -p /data && cp /data/movies_dump.sql /data/movies_dump.sql"]
-    #           volumeMounts:
-    #           - mountPath: /data
-    #             name: dump-volume
-    #         containers:
-    #         - name: db-restore
-    #           image: postgres:latest
-    #           command: ["/bin/bash", "-c"]
-    #           args:
-    #             - >
-    #               PGPASSWORD={{ db_password }} psql -h {{ db_host }} -U {{ db_user }} -d {{ db_name }} -f /data/movies_dump.sql
-    #           volumeMounts:
-    #           - mountPath: /data
-    #             name: dump-volume
-    #         restartPolicy: Never
-    #         volumes:
-    #         - name: dump-volume
-    #           hostPath:
-    #             path: "/home/kevin/Desktop/Insper/8SEM/PFE/kube_ans_recovery/data"
-    #             type: Directory
-    #   vars:
-    #     db_host: "database-service.default.svc.cluster.local"  
-    #     db_user: "user" 
-    #     db_password: "password"  
-    #     db_name: "dbname"
+    - name: Create a pod to run the database restore
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: db-restore
+            namespace: "{{ namespace }}"
+          spec:
+            initContainers:
+            - name: download-dump
+              image: busybox
+              command: ["sh", "-c", "mkdir -p /data && cp /data/movies_dump.sql /data/movies_dump.sql"]
+              volumeMounts:
+              - mountPath: /data
+                name: dump-volume
+            containers:
+            - name: db-restore
+              image: postgres:latest
+              command: ["/bin/bash", "-c"]
+              args:
+                - >
+                  PGPASSWORD={{ db_password }} psql -h {{ db_host }} -U {{ db_user }} -d {{ db_name }} -f /data/movies_dump.sql
+              volumeMounts:
+              - mountPath: /data
+                name: dump-volume
+            restartPolicy: Never
+            volumes:
+            - name: dump-volume
+              hostPath:
+                path: "/home/kevin/Desktop/Insper/8SEM/PFE/kube_ans_recovery/data"
+                type: Directory
+      vars:
+        db_host: "database-service.default.svc.cluster.local"  
+        db_user: "user" 
+        db_password: "password"  
+        db_name: "dbname"
 
-    # - name: Wait for db-restore pod to be ready
-    #   kubernetes.core.k8s_info:
-    #     api_version: v1
-    #     kind: Pod
-    #     namespace: "{{ namespace }}"
-    #     name: db-restore
-    #   register: pod_info
-    #   until: pod_info.resources[0].status.phase in ["Succeeded", "Failed"]
-    #   retries: 5
-    #   delay: 10
+    - name: Wait for db-restore pod to be ready
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ namespace }}"
+        name: db-restore
+      register: pod_info
+      until: pod_info.resources[0].status.phase in ["Succeeded", "Failed"]
+      retries: 5
+      delay: 10
 
-    # - name: Get pod logs for debugging
-    #   command: kubectl logs db-restore -n "{{ namespace }}"
-    #   register: pod_logs
-    #   ignore_errors: yes
+    - name: Get pod logs for debugging
+      command: kubectl logs db-restore -n "{{ namespace }}"
+      register: pod_logs
+      ignore_errors: yes
 
-    # - debug:
-    #     var: pod_logs.stdout
+    - debug:
+        var: pod_logs.stdout
 
-    # - name: Retrieve detailed pod status
-    #   command: kubectl get pod db-restore -n "{{ namespace }}" -o yaml
-    #   register: pod_status_yaml
-    #   ignore_errors: yes
+    - name: Retrieve detailed pod status
+      command: kubectl get pod db-restore -n "{{ namespace }}" -o yaml
+      register: pod_status_yaml
+      ignore_errors: yes
 
-    # - debug:
-    #     var: pod_status_yaml.stdout
+    - debug:
+        var: pod_status_yaml.stdout
 
-    # - name: Retrieve events for db-restore pod
-    #   command: kubectl describe pod db-restore -n "{{ namespace }}"
-    #   register: pod_events
-    #   ignore_errors: yes
+    - name: Retrieve events for db-restore pod
+      command: kubectl describe pod db-restore -n "{{ namespace }}"
+      register: pod_events
+      ignore_errors: yes
 
-    # - debug:
-    #     var: pod_events.stdout
+    - debug:
+        var: pod_events.stdout
 
-    # - name: Delete the db-restore pod
-    #   kubernetes.core.k8s:
-    #     state: absent
-    #     namespace: "{{ namespace }}"
-    #     name: db-restore
-    #     api_version: v1
-    #     kind: Pod
+    - name: Delete the db-restore pod
+      kubernetes.core.k8s:
+        state: absent
+        namespace: "{{ namespace }}"
+        name: db-restore
+        api_version: v1
+        kind: Pod
 
-    # - name: Get the IP of the database service
-    #   command: kubectl get service database-service -n "{{ namespace }}" -o jsonpath='{.spec.clusterIP}'
-    #   register: db_service_ip
+    - name: Get the IP of the database service
+      command: kubectl get service database-service -n "{{ namespace }}" -o jsonpath='{.spec.clusterIP}'
+      register: db_service_ip
 
-    # - name: Display database service IP
-    #   debug:
-    #     msg: "Database Service IP: {{ db_service_ip.stdout }}"
+    - name: Display database service IP
+      debug:
+        msg: "Database Service IP: {{ db_service_ip.stdout }}"
