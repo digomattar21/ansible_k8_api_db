@@ -6,7 +6,7 @@
     ansible_python_interpreter: "/usr/bin/python3"
     project_dir: "{{ lookup('env', 'PWD') }}"
     namespace: default
-    dump_file_path: "{{ project_dir }}/data/movies_dump.sql"
+    dump_file_path: "{{ project_dir }}/data"
     temp_db_deployment: "/tmp/db-deployment.yaml"
 
   tasks:
@@ -102,8 +102,6 @@
     - name: Display webapp URL
       debug:
         msg: "Webapp URL: {{ webapp_url.stdout }}"
-
-
 
 
     # - name: Check if db-restore pod exists

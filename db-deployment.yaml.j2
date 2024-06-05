@@ -16,7 +16,7 @@ spec:
       initContainers:
       - name: db-restore
         image: postgres:latest
-        command: ['sh', '-c', 'psql -h localhost -U user -d dbname -f /data/movies_dump.sql']
+        command: ['sh', '-c', 'PGPASSWORD=$PGPASSWORD psql -h localhost -U user -d dbname -f /data/movies_dump.sql']
         env:
         - name: PGPASSWORD
           value: "password"
