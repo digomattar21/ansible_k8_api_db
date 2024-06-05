@@ -7,6 +7,7 @@
     project_dir: "{{ lookup('env', 'PWD') }}"
     namespace: default
     dump_file_path: "{{ project_dir }}/data/movies_dump.sql"
+    temp_db_deployment: "/tmp/db-deployment.yaml"
 
   tasks:
     - name: Start Minikube
@@ -66,12 +67,16 @@
         src: "{{ project_dir }}/webapp-service.yaml"
         namespace: default
 
+    - name: Render database deployment template
+      template:
+        src: "{{ project_dir }}/db-deployment.yaml.j2"
+        dest: "{{ temp_db_deployment }}"
+
     - name: Deploy database
       kubernetes.core.k8s:
         kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
         state: present
-        src: "{{ project_dir }}/db-deployment.yaml.j2"
-        template: yes
+        src: "{{ temp_db_deployment }}"
         namespace: default
 
     - name: Deploy database service
@@ -97,6 +102,7 @@
     - name: Display webapp URL
       debug:
         msg: "Webapp URL: {{ webapp_url.stdout }}"
+
 
 
 
