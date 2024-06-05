@@ -1,0 +1,14 @@
+[
+    {   
+        "id": 1,
+        "name": "Aplicação web",
+        "service_path": "./webapp-service.yaml",
+        "deployment_path": "./webapp-deployment.yaml"
+    },
+    {   
+        "id": 2,
+        "name": "Banco de dados",
+        "service_path": "./db-service.yaml",
+        "deployment_path": "./db-deployment.yaml"
+    }
+]

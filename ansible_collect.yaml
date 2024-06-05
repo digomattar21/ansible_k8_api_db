@@ -8,9 +8,11 @@
 
   tasks:
     - name: Configure mount partitions
-      command: mount -t cifs //172.30.253.14/backup_cleanroom /mnt -o cred=/etc/cifs_credentials,vers=2.0
+      # command: mount -t cifs //172.30.253.14/backup_cleanroom /mnt -o cred=/etc/cifs_credentials,vers=2.0
+      command: sleep 1s
 
     - name: Copy files from vault
-      command: cp -r /mnt /ansible_k8_api_db/data
+      # command: cp -r /mnt /ansible_k8_api_db/data
+      command: sleep 1s
     
       

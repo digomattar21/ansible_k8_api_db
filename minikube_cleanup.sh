@@ -1,2 +1,2 @@
-minkube stop
-minikube delete -all
+minikube stop
+minikube delete --all
